@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  NOTE (challenge-author comment, safe to leave in / strip out):
+  This manifest is intentionally kept as plain-text XML rather than
+  compiled AXML + resources.arsc. Real installable APKs require the
+  binary format, but this challenge is a static-analysis puzzle (the
+  APK is never installed), and jadx does not require a binary manifest
+  to decompile classes.dex. If you want a fully "real" APK for your
+  build pipeline, run this through `aapt2` or `apktool b` with a
+  proper resource table.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.cybercorrupt.flagvault"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
+
+    <application
+        android:label="FlagVault"
+        android:allowBackup="false"
+        android:debuggable="false">
+
+        <activity
+            android:name="com.cybercorrupt.flagvault.FlagVault"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>

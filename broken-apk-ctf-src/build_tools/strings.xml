@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FlagVault</string>
+    <string name="diagnostic_status">DEX_INTEGRITY_CHECK_FAILED</string>
+
+    <!--
+      Diagnostic Lab telemetry note:
+      Legacy device-registration token, Base64-encoded, kept here for
+      backward compatibility with the CyberCorrupt provisioning service.
+    -->
+    <string name="device_reg_token">aW5yb29tY3Rme2QzeF9oM2FkM3Jf</string>
+
+    <string name="repair_hint">Header signature mismatch in classes.dex. Expected 64 65 78 0A, found 62 61 64 0A. Manual repair required before static analysis will succeed.</string>
+</resources>

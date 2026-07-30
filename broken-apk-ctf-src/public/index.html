@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CyberCorrupt // Mobile Repair Lab — Ticket #4471</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060b09;
+    --panel: #0c1613;
+    --panel-raised: #101f1a;
+    --line: #1c332b;
+    --mint: #4dffb4;
+    --emerald: #14b981;
+    --amber: #f2c14e;
+    --red: #ff5d5d;
+    --text: #d7f5e8;
+    --text-dim: #6f9689;
+    --text-dimmer: #3f5a51;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(20,185,129,0.14), transparent),
+      repeating-linear-gradient(0deg, rgba(77,255,180,0.025) 0px, rgba(77,255,180,0.025) 1px, transparent 1px, transparent 3px);
+    min-height: 100vh;
+  }
+
+  a { color: var(--mint); }
+
+  .scanline {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(77,255,180,0.55), transparent);
+    animation: scan 6s linear infinite;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.6;
+  }
+  @keyframes scan {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100vh); }
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+  }
+
+  header.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .brand {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.14em;
+    color: var(--mint);
+    text-transform: uppercase;
+  }
+  .brand span { color: var(--text-dim); font-weight: 400; }
+
+  .ticket {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .ticket b { color: var(--amber); }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border: 1px solid var(--red);
+    border-radius: 3px;
+    color: var(--red);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .status-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--red);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  h1.title {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.15;
+    margin: 0 0 10px;
+    color: #eafff5;
+  }
+  h1.title .accent { color: var(--mint); }
+
+  p.lede {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    line-height: 1.7;
+    max-width: 620px;
+    margin: 0 0 36px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 24px;
+    margin-bottom: 22px;
+    position: relative;
+  }
+  .panel::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -9px;
+    left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dimmer);
+  }
+
+  /* Hex diff — the signature element */
+  .hexdiff {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 4px 14px;
+    font-size: 13px;
+    align-items: center;
+  }
+  .hexdiff .row-label { color: var(--text-dimmer); font-size: 11px; letter-spacing: 0.06em; }
+  .hexbytes { display: flex; gap: 6px; flex-wrap: wrap; }
+  .byte {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 34px; padding: 4px 0;
+    border-radius: 3px;
+    font-size: 13px;
+    border: 1px solid var(--line);
+    background: var(--panel-raised);
+    color: var(--text-dim);
+  }
+  .byte.bad { border-color: var(--red); color: var(--red); background: rgba(255,93,93,0.07); }
+  .byte.good { border-color: var(--emerald); color: var(--mint); background: rgba(20,185,129,0.08); }
+  .hexdiff .ascii { color: var(--text-dimmer); font-size: 12px; margin-left: 4px; }
+  .arrow-row { grid-column: 1 / -1; display:flex; align-items:center; gap:10px; color: var(--text-dimmer); font-size: 12px; margin: 2px 0; }
+  .arrow-row::before, .arrow-row::after { content: ""; flex:1; height:1px; background: var(--line); }
+
+  h2.section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin: 0 0 14px;
+  }
+
+  ol.steps, ul.evidence {
+    margin: 0; padding-left: 20px;
+    color: var(--text-dim);
+    font-size: 13.5px;
+    line-height: 1.9;
+  }
+  ol.steps li::marker { color: var(--mint); font-weight: 700; }
+  ul.evidence { list-style: none; padding-left: 0; }
+  ul.evidence li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 12px;
+  }
+  ul.evidence li:last-child { border-bottom: none; }
+  ul.evidence code {
+    color: var(--mint);
+    background: var(--panel-raised);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  .download-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--mint);
+    color: #04140d;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 12px 20px;
+    border-radius: 3px;
+    text-decoration: none;
+    border: 1px solid var(--mint);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    cursor: pointer;
+  }
+  .btn:hover { box-shadow: 0 0 0 3px rgba(77,255,180,0.18); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn.secondary {
+    background: transparent;
+    color: var(--mint);
+  }
+  .meta-line {
+    font-size: 12px;
+    color: var(--text-dimmer);
+  }
+
+  .submit-panel input[type="text"] {
+    width: 100%;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .submit-panel input[type="text"]:focus {
+    border-color: var(--mint);
+    box-shadow: 0 0 0 3px rgba(77,255,180,0.12);
+  }
+  .submit-panel input[type="text"]::placeholder { color: var(--text-dimmer); }
+
+  .submit-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  #result {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 3px;
+    font-size: 13.5px;
+    display: none;
+    border: 1px solid var(--line);
+  }
+  #result.show { display: block; }
+  #result.ok { border-color: var(--emerald); color: var(--mint); background: rgba(20,185,129,0.08); }
+  #result.bad { border-color: var(--red); color: var(--red); background: rgba(255,93,93,0.08); }
+
+  footer {
+    margin-top: 48px;
+    text-align: center;
+    color: var(--text-dimmer);
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scanline, .status-pill .dot { animation: none; }
+  }
+
+  @media (max-width: 560px) {
+    .hexdiff { grid-template-columns: 1fr; gap: 2px 0; }
+    .hexdiff .row-label { margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">CyberCorrupt <span>// Mobile Repair Lab</span></div>
+    <div class="status-pill"><span class="dot"></span> Integrity Check Failed</div>
+  </header>
+
+  <h1 class="title">Diagnostic Ticket <span class="accent">#4471</span></h1>
+  <p class="lede">
+    Intake unit <code>broken_app.apk</code> failed static verification on arrival.
+    The bench flagged a header signature mismatch in <code>classes.dex</code>.
+    Pull the package, repair the header, and run it back through decompilation
+    to close the ticket.
+  </p>
+
+  <section class="panel" data-label="Header Diagnostic">
+    <h2 class="section-title">Signature Mismatch — classes.dex, offset 0x00</h2>
+    <div class="hexdiff">
+      <div class="row-label">RECEIVED</div>
+      <div class="hexbytes">
+        <span class="byte bad">62</span>
+        <span class="byte bad">61</span>
+        <span class="byte bad">64</span>
+        <span class="byte bad">0A</span>
+        <span class="ascii">"bad\n"</span>
+      </div>
+      <div class="arrow-row">repair target</div>
+      <div class="row-label">EXPECTED</div>
+      <div class="hexbytes">
+        <span class="byte good">64</span>
+        <span class="byte good">65</span>
+        <span class="byte good">78</span>
+        <span class="byte good">0A</span>
+        <span class="ascii">"dex\n" — valid DEX magic</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-label="Repair Procedure">
+    <h2 class="section-title">Bench Notes</h2>
+    <ol class="steps">
+      <li>Download <code>broken_app.apk</code> below and unzip it (it's a standard zip archive).</li>
+      <li>Open <code>classes.dex</code> in a hex editor and correct the first 4 bytes.</li>
+      <li>Repack or point <code>jadx</code> / <code>apktool</code> directly at the repaired <code>classes.dex</code> to decompile it.</li>
+      <li>Cross-reference <code>res/values/strings.xml</code> and the decompiled class fields for two fragments of one recovered string.</li>
+      <li>Submit the assembled flag below to close the ticket.</li>
+    </ol>
+  </section>
+
+  <section class="panel" data-label="Intake Package">
+    <h2 class="section-title">broken_app.apk</h2>
+    <div class="download-row">
+      <a class="btn" href="/broken_app.apk" download>&#8595; Download broken_app.apk</a>
+      <span class="meta-line">unsigned analysis package · not for install</span>
+    </div>
+  </section>
+
+  <section class="panel submit-panel" data-label="Close Ticket">
+    <h2 class="section-title">Submit Recovered Flag</h2>
+    <input type="text" id="flagInput" placeholder="inroomctf{...}" autocomplete="off" spellcheck="false" />
+    <div class="submit-row">
+      <button class="btn" id="submitBtn">Verify &amp; Close Ticket</button>
+    </div>
+    <div id="result"></div>
+  </section>
+
+  <footer>CyberCorrupt Mobile Repair Lab — bench diagnostics terminal — session unlogged</footer>
+</div>
+
+<script>
+  const input = document.getElementById('flagInput');
+  const btn = document.getElementById('submitBtn');
+  const result = document.getElementById('result');
+
+  async function submitFlag() {
+    const flag = input.value.trim();
+    result.className = '';
+    if (!flag) {
+      result.textContent = '> No flag entered.';
+      result.classList.add('show', 'bad');
+      return;
+    }
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Verifying...';
+    try {
+      const res = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flag }),
+      });
+      const data = await res.json();
+      if (data.correct) {
+        result.textContent = '> ' + data.message;
+        result.classList.add('show', 'ok');
+      } else {
+        result.textContent = '> ' + (data.message || 'Incorrect flag.');
+        result.classList.add('show', 'bad');
+      }
+    } catch (err) {
+      result.textContent = '> Connection error. Try again.';
+      result.classList.add('show', 'bad');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+
+  btn.addEventListener('click', submitFlag);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitFlag();
+  });
+</script>
+</body>
+</html>
