@@ -189,6 +189,7 @@
     line-height: 1.9;
   }
   ol.steps li::marker { color: var(--mint); font-weight: 700; }
+  ol.steps li { margin-bottom: 6px; }
   ul.evidence { list-style: none; padding-left: 0; }
   ul.evidence li {
     padding: 10px 0;
@@ -237,43 +238,6 @@
     font-size: 12px;
     color: var(--text-dimmer);
   }
-
-  .submit-panel input[type="text"] {
-    width: 100%;
-    background: var(--panel-raised);
-    border: 1px solid var(--line);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    padding: 12px 14px;
-    border-radius: 3px;
-    outline: none;
-    transition: border-color 0.15s ease;
-  }
-  .submit-panel input[type="text"]:focus {
-    border-color: var(--mint);
-    box-shadow: 0 0 0 3px rgba(77,255,180,0.12);
-  }
-  .submit-panel input[type="text"]::placeholder { color: var(--text-dimmer); }
-
-  .submit-row {
-    display: flex;
-    gap: 12px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-
-  #result {
-    margin-top: 16px;
-    padding: 12px 14px;
-    border-radius: 3px;
-    font-size: 13.5px;
-    display: none;
-    border: 1px solid var(--line);
-  }
-  #result.show { display: block; }
-  #result.ok { border-color: var(--emerald); color: var(--mint); background: rgba(20,185,129,0.08); }
-  #result.bad { border-color: var(--red); color: var(--red); background: rgba(255,93,93,0.08); }
 
   footer {
     margin-top: 48px;
@@ -336,11 +300,11 @@
   <section class="panel" data-label="Repair Procedure">
     <h2 class="section-title">Bench Notes</h2>
     <ol class="steps">
-      <li>Download <code>broken_app.apk</code> below and unzip it (it's a standard zip archive).</li>
-      <li>Open <code>classes.dex</code> in a hex editor and correct the first 4 bytes.</li>
-      <li>Repack or point <code>jadx</code> / <code>apktool</code> directly at the repaired <code>classes.dex</code> to decompile it.</li>
-      <li>Cross-reference <code>res/values/strings.xml</code> and the decompiled class fields for two fragments of one recovered string.</li>
-      <li>Submit the assembled flag below to close the ticket.</li>
+      <li>The patient arrived zipped up tight. Something standard hides inside — the kind of archive most tools already know how to open without being told twice.</li>
+      <li>Four bytes at the very start are lying about what they are. A hex editor will let you look them in the eye and correct the story — compare what's there against what should be there.</li>
+      <li>Once the header tells the truth again, the usual decompilation tools will stop turning up their noses at it. Point one at the repaired file and let it do the talking.</li>
+      <li>The full story isn't written in one place. Half of it sits in a resource file that holds human-readable text; the other half is stitched into a field somewhere in the decompiled classes. Neither half means much alone.</li>
+      <li>Put the two fragments together, in order, and you'll have what the bench is looking for.</li>
     </ol>
   </section>
 
@@ -352,61 +316,8 @@
     </div>
   </section>
 
-  <section class="panel submit-panel" data-label="Close Ticket">
-    <h2 class="section-title">Submit Recovered Flag</h2>
-    <input type="text" id="flagInput" placeholder="inroomctf{...}" autocomplete="off" spellcheck="false" />
-    <div class="submit-row">
-      <button class="btn" id="submitBtn">Verify &amp; Close Ticket</button>
-    </div>
-    <div id="result"></div>
-  </section>
-
   <footer>CyberCorrupt Mobile Repair Lab — bench diagnostics terminal — session unlogged</footer>
 </div>
 
-<script>
-  const input = document.getElementById('flagInput');
-  const btn = document.getElementById('submitBtn');
-  const result = document.getElementById('result');
-
-  async function submitFlag() {
-    const flag = input.value.trim();
-    result.className = '';
-    if (!flag) {
-      result.textContent = '> No flag entered.';
-      result.classList.add('show', 'bad');
-      return;
-    }
-    btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = 'Verifying...';
-    try {
-      const res = await fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ flag }),
-      });
-      const data = await res.json();
-      if (data.correct) {
-        result.textContent = '> ' + data.message;
-        result.classList.add('show', 'ok');
-      } else {
-        result.textContent = '> ' + (data.message || 'Incorrect flag.');
-        result.classList.add('show', 'bad');
-      }
-    } catch (err) {
-      result.textContent = '> Connection error. Try again.';
-      result.classList.add('show', 'bad');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = originalText;
-    }
-  }
-
-  btn.addEventListener('click', submitFlag);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') submitFlag();
-  });
-</script>
 </body>
 </html>
